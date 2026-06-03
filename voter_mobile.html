@@ -464,11 +464,13 @@
 
     /* Responsive: on small screens fill full width */
     @media (max-width: 440px) {
-      html, body { padding: 0; align-items: flex-start; }
+      html, body { padding: 0; align-items: flex-start; overflow: hidden; }
       .phone-frame {
         border-radius: 0;
+        width: 100vw;
+        height: 100vh;
         min-height: 100vh;
-        max-height: none;
+        max-height: 100vh;
         box-shadow: none;
       }
       .notch { display: none; }
@@ -479,7 +481,7 @@
       .phone-frame {
         width: min(720px, 95%);
         min-height: 90vh;
-        max-height: none;
+        max-height: 90vh; /* Garder la hauteur fixe même sur grand écran */
       }
     }
 
@@ -488,11 +490,12 @@
       justify-content: space-between;
       gap: 18px;
       padding: 12px 18px 18px;
-      background: transparent;
+      background: #ffffff; /* S'assurer que le fond est opaque sous le texte qui défile */
       border-top: 1px solid rgba(99,56,242,.12);
       position: sticky;
       bottom: 0;
       z-index: 10;
+      flex-shrink: 0; /* Ne pas réduire la taille de la barre du bas */
     }
     .nav-item {
       display: inline-flex;

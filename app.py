@@ -223,11 +223,14 @@ def admin_candidat_add():
     photo_path = None
     
     if 'photo' in request.files and request.files['photo'].filename:
+        import base64
         file = request.files['photo']
-        filename = f"candidat_{new_id}_{file.filename}"
-        filepath = os.path.join(UPLOAD_FOLDER, filename)
-        file.save(filepath)
-        photo_path = f"/static/uploads/{filename}"
+        # Lire le fichier et l'encoder en Base64
+        file_content = file.read()
+        if file_content:
+            encoded_string = base64.b64encode(file_content).decode('utf-8')
+            mime_type = file.mimetype or "image/jpeg"
+            photo_path = f"data:{mime_type};base64,{encoded_string}"
     
     candidat = {
         'id': new_id,
@@ -336,11 +339,13 @@ def admin_candidat_edit(candidat_id):
             c['description'] = request.form.get('description', c.get('description', '')).strip()
             
             if 'photo' in request.files and request.files['photo'].filename:
+                import base64
                 file = request.files['photo']
-                filename = f"candidat_{candidat_id}_{file.filename}"
-                filepath = os.path.join(UPLOAD_FOLDER, filename)
-                file.save(filepath)
-                c['photo'] = f"/static/uploads/{filename}"
+                file_content = file.read()
+                if file_content:
+                    encoded_string = base64.b64encode(file_content).decode('utf-8')
+                    mime_type = file.mimetype or "image/jpeg"
+                    c['photo'] = f"data:{mime_type};base64,{encoded_string}"
             break
     sauvegarder_donnees(data)
     flash('Candidat modifié', 'success')
