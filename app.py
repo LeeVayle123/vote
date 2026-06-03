@@ -5,8 +5,24 @@ from datetime import datetime
 from functools import wraps
 import hashlib
 
-app = Flask(__name__)
-app.secret_key = "secret_key_vote_2025"
+# ─── Chemins absolus basés sur l'emplacement de ce fichier ──────────────────
+BASE_DIR = os.path.abspath(os.path.dirname(__file__))
+
+app = Flask(
+    __name__,
+    template_folder=os.path.join(BASE_DIR, 'templates'),
+    static_folder=os.path.join(BASE_DIR, 'static')
+)
+
+# Système robuste de recherche des fichiers HTML individuellement/dans plusieurs dossiers
+from jinja2 import ChoiceLoader, FileSystemLoader
+app.jinja_loader = ChoiceLoader([
+    FileSystemLoader(os.path.join(BASE_DIR, 'templates')),
+    FileSystemLoader(BASE_DIR),
+    FileSystemLoader(os.path.abspath(os.getcwd())),
+])
+
+app.secret_key = os.environ.get('SECRET_KEY', 'secret_key_vote_2025')
 
 DATA_FILE = os.path.join(os.path.dirname(__file__), "donnees.json")
 UPLOAD_FOLDER = os.path.join(os.path.dirname(__file__), "static", "uploads")
