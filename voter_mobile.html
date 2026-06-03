@@ -514,15 +514,28 @@
     .nav-item-primary {
       color: #4f46e5;
     }
-    .nav-icon { font-size: 1.6rem; line-height: 1; }
+    .nav-icon {
+      font-size: 1.6rem;
+      line-height: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
     .nav-icon svg,
     .greeting-icon svg,
     .btn-icon svg {
-      width: 1.1rem;
-      height: 1.1rem;
+      width: 24px;
+      height: 24px;
       display: block;
+      stroke: #6b7280; /* Couleur grise par défaut */
+      fill: none;
     }
-    .nav-icon svg { width: 1.35rem; height: 1.35rem; }
+    .nav-item-primary .nav-icon svg {
+      stroke: #4f46e5; /* Couleur indigo pour l'item principal */
+    }
+    .nav-item:hover .nav-icon svg {
+      stroke: #4338ca;
+    }
     .nav-label { display: none; }
   </style>
 </head>
