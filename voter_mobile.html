@@ -613,7 +613,7 @@
             <div class="cand-photo-wrap">
               <img
                 class="cand-photo"
-                src="{{ c.photo if c.photo else url_for('static', filename='uploads/default-avatar.png') }}"
+                src="{% if c.photo %}{{ c.photo }}{% else %}{{ url_for('static', filename='uploads/default-avatar.png') }}{% endif %}"
                 alt="Photo de {{ c.nom_complet }}"
                 onerror="this.src='{{ url_for('static', filename='uploads/default-avatar.png') }}'"
                 loading="lazy"
