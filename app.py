@@ -373,8 +373,8 @@ def admin_logout():
 
 @app.route('/')
 def index():
-    # Afficher la page d'accueil électeur (avec image et bouton "Commencer votre vote")
-    return render_template('voter_home.html')
+    # Rediriger par défaut vers la page de connexion mobile
+    return redirect(url_for('voter_login_mobile'))
 
 # ─── ROUTES ÉLECTEURS - MOBILE (New Interface) ──────────────────────────────
 
@@ -691,4 +691,6 @@ def api_stats():
 # ─── Run ───────────────────────────────────────────────────────
 
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    port = int(os.environ.get('PORT', 5000))
+    debug = os.environ.get('FLASK_DEBUG', 'true').lower() == 'true'
+    app.run(debug=debug, host='0.0.0.0', port=port)
