@@ -1,0 +1,615 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Bienvenue — S·Vote</title>
+  <meta name="description" content="Plateforme de vote électronique pour les étudiants. Commencez votre vote en sécurité.">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body {
+      height: 100%;
+      font-family: 'Inter', system-ui, sans-serif;
+      background: linear-gradient(135deg, #f0f4ff 0%, #ece9ff 50%, #f5f0ff 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    /* Phone Frame */
+    .phone-frame {
+      width: min(390px, 100%);
+      min-height: 780px;
+      background: #ffffff;
+      border-radius: 52px;
+      box-shadow:
+        0 0 0 1px rgba(0,0,0,.08),
+        0 8px 16px rgba(0,0,0,.04),
+        0 24px 60px rgba(99,56,242,.12),
+        0 60px 120px rgba(99,56,242,.06);
+      overflow: hidden;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Notch */
+    .notch {
+      position: absolute;
+      top: 16px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 120px;
+      height: 10px;
+      background: #e5e7eb;
+      border-radius: 999px;
+      z-index: 10;
+    }
+
+    /* Screens container */
+    .screens {
+      flex: 1;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .screen {
+      position: absolute;
+      inset: 0;
+      padding: 52px 28px 36px;
+      display: flex;
+      flex-direction: column;
+      transition: all 0.45s cubic-bezier(0.34, 1.56, 0.64, 1);
+      will-change: transform, opacity;
+    }
+
+    .screen.active { transform: translateX(0); opacity: 1; pointer-events: all; }
+    .screen.left   { transform: translateX(-110%); opacity: 0; pointer-events: none; }
+    .screen.right  { transform: translateX(110%); opacity: 0; pointer-events: none; }
+
+    /* ─── SCREEN 1: Welcome ─── */
+    #screen-welcome {
+      background: #fff;
+      justify-content: flex-start;
+    }
+
+    .s-logo {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 28px;
+    }
+    .s-logo-dot {
+      width: 34px;
+      height: 34px;
+      background: linear-gradient(135deg, #6338f2, #a78bfa);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: 900;
+      font-size: 1.05rem;
+      box-shadow: 0 6px 20px rgba(99,56,242,.32);
+    }
+    .s-logo-text {
+      font-weight: 800;
+      font-size: 1.1rem;
+      color: #1e1b4b;
+      letter-spacing: -.3px;
+    }
+
+    /* Illustration */
+    .illus-wrap {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 10px 0 20px;
+      position: relative;
+    }
+
+    .illus-bg {
+      position: absolute;
+      width: 220px;
+      height: 220px;
+      background: radial-gradient(circle, #ede9fe 0%, transparent 70%);
+      border-radius: 50%;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+    }
+
+    .illus-svg {
+      position: relative;
+      z-index: 1;
+      animation: float 4s ease-in-out infinite;
+      filter: drop-shadow(0 20px 40px rgba(99,56,242,.18));
+    }
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-12px); }
+    }
+
+    .welcome-title {
+      font-size: 1.75rem;
+      font-weight: 900;
+      color: #1e1b4b;
+      line-height: 1.1;
+      letter-spacing: -.5px;
+      margin-bottom: 12px;
+    }
+    .welcome-sub {
+      font-size: .95rem;
+      color: #6b7280;
+      line-height: 1.65;
+      margin-bottom: 32px;
+    }
+
+    .btn-start {
+      width: 100%;
+      background: linear-gradient(135deg, #6338f2, #8b5cf6);
+      color: #fff;
+      border: none;
+      border-radius: 18px;
+      padding: 18px;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      letter-spacing: .2px;
+      box-shadow: 0 8px 30px rgba(99,56,242,.35), 0 2px 6px rgba(99,56,242,.2);
+      transition: transform .2s, box-shadow .2s;
+      position: relative;
+      overflow: hidden;
+    }
+    .btn-start::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(255,255,255,.18), transparent);
+      pointer-events: none;
+    }
+    .btn-start:hover { transform: translateY(-2px); box-shadow: 0 14px 40px rgba(99,56,242,.4), 0 4px 10px rgba(99,56,242,.24); }
+    .btn-start:active { transform: scale(.98); }
+
+    /* ─── SCREEN 2: Matricule ─── */
+    #screen-matricule {
+      background: #fff;
+      justify-content: flex-start;
+    }
+
+    .back-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #f3f4f6;
+      border: none;
+      border-radius: 12px;
+      padding: 8px 14px;
+      font-size: .88rem;
+      font-weight: 600;
+      color: #374151;
+      cursor: pointer;
+      margin-bottom: 28px;
+      transition: background .15s;
+    }
+    .back-btn:hover { background: #e5e7eb; }
+
+    .step-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: .78rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #6338f2;
+      background: rgba(99,56,242,.08);
+      padding: 6px 12px;
+      border-radius: 999px;
+      margin-bottom: 16px;
+    }
+
+    .screen-title {
+      font-size: 1.55rem;
+      font-weight: 900;
+      color: #1e1b4b;
+      line-height: 1.15;
+      letter-spacing: -.4px;
+      margin-bottom: 8px;
+    }
+    .screen-hint {
+      color: #6b7280;
+      font-size: .9rem;
+      line-height: 1.6;
+      margin-bottom: 28px;
+    }
+
+    .input-group {
+      position: relative;
+      margin-bottom: 18px;
+    }
+    .input-group label {
+      display: block;
+      font-size: .82rem;
+      font-weight: 600;
+      color: #374151;
+      margin-bottom: 8px;
+    }
+    .input-field {
+      width: 100%;
+      border: 2px solid #e5e7eb;
+      border-radius: 16px;
+      padding: 16px 18px;
+      font-size: .95rem;
+      color: #1f2937;
+      background: #f9fafb;
+      outline: none;
+      transition: border-color .2s, box-shadow .2s, background .2s;
+      font-family: inherit;
+      letter-spacing: .5px;
+    }
+    .input-field:focus {
+      border-color: #6338f2;
+      background: #fff;
+      box-shadow: 0 0 0 4px rgba(99,56,242,.1);
+    }
+    .input-field::placeholder { color: #9ca3af; letter-spacing: 0; }
+
+    /* Error State */
+    .error-badge {
+      display: none;
+      align-items: center;
+      gap: 8px;
+      background: #fef2f2;
+      border: 1px solid #fecaca;
+      border-radius: 12px;
+      padding: 12px 14px;
+      color: #dc2626;
+      font-size: .88rem;
+      font-weight: 500;
+      margin-bottom: 16px;
+    }
+    .error-badge.visible { display: flex; }
+
+    .btn-verify {
+      width: 100%;
+      background: linear-gradient(135deg, #6338f2, #8b5cf6);
+      color: #fff;
+      border: none;
+      border-radius: 18px;
+      padding: 18px;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 8px 24px rgba(99,56,242,.3);
+      transition: transform .2s, box-shadow .2s, opacity .2s;
+    }
+    .btn-verify:hover { transform: translateY(-2px); box-shadow: 0 14px 36px rgba(99,56,242,.38); }
+    .btn-verify:active { transform: scale(.98); }
+    .btn-verify:disabled { opacity: .6; cursor: not-allowed; transform: none; }
+
+    /* Preview Card */
+    .preview-card {
+      display: none;
+      background: linear-gradient(135deg, #f5f3ff, #ede9fe);
+      border: 1.5px solid rgba(99,56,242,.2);
+      border-radius: 20px;
+      padding: 16px;
+      margin-bottom: 18px;
+      animation: slideUp .35s cubic-bezier(.34,1.56,.64,1);
+    }
+    .preview-card.visible { display: flex; gap: 14px; align-items: center; }
+    @keyframes slideUp {
+      from { transform: translateY(20px); opacity: 0; }
+      to   { transform: translateY(0); opacity: 1; }
+    }
+    .preview-avatar {
+      width: 58px;
+      height: 58px;
+      border-radius: 16px;
+      object-fit: cover;
+      border: 2px solid rgba(99,56,242,.3);
+      background: #c4b5fd;
+      flex-shrink: 0;
+    }
+    .preview-info { flex: 1; }
+    .preview-name { font-weight: 800; color: #1e1b4b; font-size: .97rem; margin-bottom: 3px; }
+    .preview-mat  { color: #6338f2; font-size: .82rem; font-weight: 600; margin-bottom: 3px; }
+    .preview-promo { font-size: .8rem; color: #6b7280; }
+    .preview-check {
+      width: 32px; height: 32px;
+      background: #6338f2;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      color: #fff;
+      flex-shrink: 0;
+      box-shadow: 0 4px 14px rgba(99,56,242,.4);
+    }
+
+    .btn-continue {
+      width: 100%;
+      background: #1e1b4b;
+      color: #fff;
+      border: none;
+      border-radius: 18px;
+      padding: 18px;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: background .2s, transform .2s;
+    }
+    .btn-continue:hover { background: #312e81; transform: translateY(-2px); }
+
+    /* Loading spinner */
+    .spinner {
+      display: none;
+      width: 18px; height: 18px;
+      border: 2px solid rgba(255,255,255,.4);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin .6s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .btn-verify.loading .spinner { display: inline-block; }
+    .btn-verify.loading .btn-text { display: none; }
+
+    /* Bottom safe area */
+    .bottom-safe { height: 24px; }
+
+    @media (min-width: 900px) {
+      html, body { padding: 30px; }
+      .phone-frame {
+        width: min(720px, 95%);
+        min-height: 90vh;
+        max-height: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="phone-frame" role="main">
+    <div class="notch"></div>
+    <div class="screens">
+
+      <!-- ── SCREEN 1: Welcome ── -->
+      <div id="screen-welcome" class="screen active" aria-label="Écran d'accueil">
+        <div class="s-logo">
+          <div class="s-logo-dot" aria-hidden="true">S</div>
+          <div class="s-logo-text">S·Vote</div>
+        </div>
+
+        <!-- Isometric SVG Illustration -->
+        <div class="illus-wrap" aria-hidden="true">
+          <div class="illus-bg"></div>
+          <svg class="illus-svg" width="220" height="200" viewBox="0 0 220 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <!-- Base platform -->
+            <ellipse cx="110" cy="170" rx="85" ry="18" fill="#e8e0ff" opacity=".6"/>
+            <!-- Card layer 3 (back) -->
+            <rect x="38" y="100" width="144" height="90" rx="16" fill="#c4b5fd" opacity=".55" transform="rotate(-4,110,140)"/>
+            <!-- Card layer 2 -->
+            <rect x="32" y="90" width="144" height="90" rx="16" fill="#a78bfa" opacity=".65" transform="rotate(-2,110,135)"/>
+            <!-- Card layer 1 (front) -->
+            <rect x="28" y="80" width="164" height="100" rx="18" fill="#fff" filter="url(#shadow)"/>
+            <defs>
+              <filter id="shadow" x="-10%" y="-10%" width="120%" height="130%">
+                <feDropShadow dx="0" dy="10" stdDeviation="14" flood-color="#6338f2" flood-opacity=".18"/>
+              </filter>
+            </defs>
+            <!-- Card content lines -->
+            <rect x="46" y="103" width="60" height="8" rx="4" fill="#e5e7eb"/>
+            <rect x="46" y="119" width="100" height="6" rx="3" fill="#ede9fe"/>
+            <rect x="46" y="133" width="80" height="6" rx="3" fill="#ede9fe"/>
+            <!-- Checkmark circle -->
+            <circle cx="163" cy="155" r="26" fill="#6338f2" filter="url(#ckshadow)"/>
+            <defs>
+              <filter id="ckshadow" x="-30%" y="-30%" width="160%" height="160%">
+                <feDropShadow dx="0" dy="6" stdDeviation="8" flood-color="#6338f2" flood-opacity=".4"/>
+              </filter>
+            </defs>
+            <polyline points="153,156 160,163 174,147" stroke="#fff" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <!-- Location pin on top card -->
+            <circle cx="100" cy="62" r="18" fill="#6338f2"/>
+            <circle cx="100" cy="58" r="8" fill="#fff"/>
+            <path d="M100 66 Q94 78 100 84 Q106 78 100 66Z" fill="#6338f2"/>
+            <!-- Particle dots -->
+            <circle cx="45" cy="52" r="4" fill="#a78bfa" opacity=".7"/>
+            <circle cx="165" cy="48" r="3" fill="#c4b5fd" opacity=".8"/>
+            <circle cx="30" cy="120" r="5" fill="#ede9fe"/>
+            <circle cx="185" cy="110" r="3.5" fill="#ddd6fe" opacity=".9"/>
+          </svg>
+        </div>
+
+        <h1 class="welcome-title">Votez en toute<br>confiance</h1>
+        <p class="welcome-sub">Votre vote compte. Connectez-vous avec votre matricule étudiant pour accéder au scrutin sécurisé.</p>
+
+        <button id="btn-start" class="btn-start" aria-label="Commencer le processus de vote">
+          Commencer votre vote
+        </button>
+        <div class="bottom-safe"></div>
+      </div>
+
+      <!-- ── SCREEN 2: Matricule ── -->
+      <div id="screen-matricule" class="screen right" aria-label="Saisie du matricule">
+        <button id="btn-back" class="back-btn" aria-label="Retour à l'accueil">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M15 18l-6-6 6-6"/></svg>
+          Retour
+        </button>
+
+        <span class="step-label">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l2 2"/></svg>
+          Étape 1 sur 2
+        </span>
+        <h2 class="screen-title">Entrez votre<br>matricule</h2>
+        <p class="screen-hint">Votre identité sera vérifiée avant d'accéder à la liste des candidats.</p>
+
+        <div id="error-badge" class="error-badge" role="alert" aria-live="polite">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          <span id="error-text">Erreur</span>
+        </div>
+
+        <div class="input-group">
+          <label for="mat-input">Numéro de matricule</label>
+          <input id="mat-input" class="input-field" type="text" placeholder="Ex: 2024021018"
+            maxlength="20" autocomplete="off" autocorrect="off" spellcheck="false"
+            inputmode="text" aria-describedby="mat-hint">
+        </div>
+
+        <!-- Student preview card (shown after verification) -->
+        <div id="preview-card" class="preview-card" aria-live="polite">
+          <img id="preview-avatar" class="preview-avatar" src="/static/uploads/default-avatar.png" alt="Photo de l'étudiant">
+          <div class="preview-info">
+            <div id="preview-name" class="preview-name">—</div>
+            <div id="preview-mat"  class="preview-mat">—</div>
+            <div id="preview-promo" class="preview-promo">—</div>
+          </div>
+          <div class="preview-check" aria-hidden="true">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.8" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+          </div>
+        </div>
+
+        <button id="btn-verify" class="btn-verify" aria-label="Vérifier le matricule">
+          <span class="btn-text">Vérifier</span>
+          <span class="spinner" aria-hidden="true"></span>
+        </button>
+
+        <!-- Hidden form to submit the actual login -->
+        <form id="login-form" method="POST" action="/voter/login" style="display:none">
+          <input type="hidden" name="matricule" id="confirm-mat">
+        </form>
+
+        <div id="btn-continue-wrap" style="margin-top:14px; display:none">
+          <button id="btn-continue" class="btn-continue" aria-label="Continuer vers le vote">
+            OK — Continuer vers le vote →
+          </button>
+        </div>
+
+        <div class="bottom-safe"></div>
+      </div>
+    </div><!-- /screens -->
+  </div>
+
+  <script>
+    const $ = id => document.getElementById(id);
+    const screenWelcome   = $('screen-welcome');
+    const screenMatricule = $('screen-matricule');
+    const btnStart    = $('btn-start');
+    const btnBack     = $('btn-back');
+    const matInput    = $('mat-input');
+    const btnVerify   = $('btn-verify');
+    const errorBadge  = $('error-badge');
+    const errorText   = $('error-text');
+    const previewCard = $('preview-card');
+    const previewAvatar = $('preview-avatar');
+    const previewName   = $('preview-name');
+    const previewMat    = $('preview-mat');
+    const previewPromo  = $('preview-promo');
+    const confirmMat    = $('confirm-mat');
+    const loginForm     = $('login-form');
+    const btnContinueWrap = $('btn-continue-wrap');
+    const btnContinue   = $('btn-continue');
+
+    /* ── Navigation ── */
+    function goTo(from, to, dir = 'right') {
+      from.classList.remove('active');
+      from.classList.add('left');
+      to.classList.remove('right', 'left');
+      to.classList.add('active');
+      if (dir === 'right') {
+        from.classList.remove('active'); from.classList.add('left');
+      } else {
+        from.classList.remove('active'); from.classList.add('right');
+      }
+    }
+
+    btnStart.addEventListener('click', () => {
+      screenWelcome.classList.remove('active'); screenWelcome.classList.add('left');
+      screenMatricule.classList.remove('right'); screenMatricule.classList.add('active');
+      setTimeout(() => matInput.focus(), 300);
+    });
+
+    btnBack.addEventListener('click', () => {
+      screenMatricule.classList.remove('active'); screenMatricule.classList.add('right');
+      screenWelcome.classList.remove('left'); screenWelcome.classList.add('active');
+      resetForm();
+    });
+
+    /* ── Auto uppercase ── */
+    matInput.addEventListener('input', e => {
+      hideError();
+      hidePreview();
+      btnContinueWrap.style.display = 'none';
+      btnVerify.style.display = 'block';
+    });
+
+    matInput.addEventListener('keydown', e => {
+      if (e.key === 'Enter') btnVerify.click();
+    });
+
+    /* ── Verify ── */
+    btnVerify.addEventListener('click', async () => {
+      const mat = matInput.value.trim().toUpperCase();
+      if (!mat) { showError("Veuillez entrer votre matricule."); return; }
+
+      btnVerify.classList.add('loading');
+      btnVerify.disabled = true;
+      hideError();
+      hidePreview();
+
+      try {
+        const res = await fetch('/api/verify-matricule', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ matricule: mat })
+        });
+        const data = await res.json();
+
+        if (data.success) {
+          const d = data.data;
+          previewName.textContent  = `${d.prenom || ''} ${d.nom || ''}`.trim();
+          previewMat.textContent   = d.matricule || mat;
+          previewPromo.textContent = `${d.promotion || ''} — ${d.filiere || ''}`.replace(/^— |—$/, '');
+          previewAvatar.src = d.photo || '/static/uploads/default-avatar.png';
+          previewAvatar.onerror = () => { previewAvatar.src = '/static/uploads/default-avatar.png'; };
+          previewCard.classList.add('visible');
+          confirmMat.value = mat;
+          btnContinueWrap.style.display = 'block';
+          btnVerify.style.display = 'none';
+        } else {
+          showError(data.error || "Matricule non reconnu. Contactez l'administrateur.");
+        }
+      } catch (e) {
+        showError("Erreur de connexion. Réessayez.");
+      } finally {
+        btnVerify.classList.remove('loading');
+        btnVerify.disabled = false;
+      }
+    });
+
+    btnContinue.addEventListener('click', () => {
+      btnContinue.disabled = true;
+      btnContinue.textContent = 'Chargement...';
+      loginForm.submit();
+    });
+
+    function showError(msg) {
+      errorText.textContent = msg;
+      errorBadge.classList.add('visible');
+    }
+    function hideError() { errorBadge.classList.remove('visible'); }
+    function hidePreview() {
+      previewCard.classList.remove('visible');
+      btnContinueWrap.style.display = 'none';
+      btnVerify.style.display = 'block';
+    }
+    function resetForm() {
+      matInput.value = '';
+      hideError();
+      hidePreview();
+    }
+  </script>
+</body>
+</html>

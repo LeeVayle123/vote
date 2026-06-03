@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Connexion — S·Vote</title>
+  <meta name="description" content="Connectez-vous avec votre matricule pour voter.">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body {
+      min-height: 100vh; font-family: 'Inter', system-ui, sans-serif;
+      background: linear-gradient(135deg, #f0f4ff 0%, #ece9ff 50%, #f5f0ff 100%);
+      display: flex; align-items: center; justify-content: center; padding: 24px;
+    }
+    .card {
+      width: min(380px, 100%);
+      background: #fff;
+      border-radius: 30px;
+      padding: 36px 30px;
+      box-shadow: 0 8px 40px rgba(99,56,242,.13), 0 2px 8px rgba(99,56,242,.07);
+    }
+    .logo { display: flex; align-items: center; gap: 10px; margin-bottom: 28px; }
+    .logo-dot {
+      width: 36px; height: 36px; border-radius: 11px;
+      background: linear-gradient(135deg,#6338f2,#a78bfa);
+      display: flex; align-items: center; justify-content: center;
+      color: #fff; font-weight: 900; font-size: 1rem;
+      box-shadow: 0 5px 18px rgba(99,56,242,.3);
+    }
+    .logo-text { font-weight: 800; font-size: 1.15rem; color: #1e1b4b; }
+    h1 { font-size: 1.5rem; font-weight: 900; color: #1e1b4b; letter-spacing: -.3px; margin-bottom: 6px; }
+    .sub { font-size: .88rem; color: #6b7280; line-height: 1.55; margin-bottom: 24px; }
+
+    .error-box {
+      display: flex; align-items: flex-start; gap: 10px;
+      background: #fef2f2; border: 1px solid #fecaca; border-radius: 14px;
+      padding: 13px 15px; color: #dc2626; font-size: .88rem;
+      font-weight: 500; line-height: 1.4; margin-bottom: 18px;
+    }
+
+    label { display: block; font-size: .82rem; font-weight: 600; color: #374151; margin-bottom: 8px; }
+    input[name="matricule"] {
+      width: 100%; border: 2px solid #e5e7eb; border-radius: 14px;
+      padding: 15px 18px; font-size: .95rem; color: #1f2937;
+      background: #f9fafb; font-family: inherit; outline: none;
+      transition: border-color .2s, box-shadow .2s; letter-spacing: .5px;
+      text-transform: uppercase;
+    }
+    input[name="matricule"]:focus {
+      border-color: #6338f2; background: #fff;
+      box-shadow: 0 0 0 4px rgba(99,56,242,.1);
+    }
+    input[name="matricule"]::placeholder { color: #9ca3af; text-transform: none; letter-spacing: 0; font-weight: 400; }
+
+    .btn {
+      margin-top: 20px; width: 100%; border: none; border-radius: 16px;
+      padding: 17px; font-size: .97rem; font-weight: 800; cursor: pointer;
+      background: linear-gradient(135deg,#6338f2,#8b5cf6); color: #fff;
+      font-family: inherit; letter-spacing: .2px;
+      box-shadow: 0 8px 26px rgba(99,56,242,.32);
+      transition: transform .2s, box-shadow .2s;
+    }
+    .btn:hover { transform: translateY(-2px); box-shadow: 0 14px 38px rgba(99,56,242,.4); }
+    .btn:active { transform: scale(.98); }
+    .btn:disabled { opacity: .55; cursor: not-allowed; transform: none; }
+
+    .back-link {
+      display: block; text-align: center; margin-top: 18px;
+      font-size: .86rem; color: #9ca3af; text-decoration: none;
+      transition: color .2s;
+    }
+    .back-link:hover { color: #6338f2; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="logo">
+      <div class="logo-dot">S</div>
+      <div class="logo-text">S·Vote</div>
+    </div>
+    <h1>Entrez votre matricule</h1>
+    <p class="sub">Votre identité sera vérifiée avant d'accéder à la liste des candidats.</p>
+
+    {% if error %}
+    <div class="error-box">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" style="flex-shrink:0;margin-top:1px"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      {{ error }}
+    </div>
+    {% endif %}
+
+    <form method="POST" action="/voter/login" id="login-form">
+      <label for="mat">Numéro de matricule</label>
+      <input id="mat" name="matricule" type="text" placeholder="Ex: 2024021018"
+        maxlength="20" autocomplete="off" autocorrect="off" spellcheck="false"
+        required autofocus>
+      <button type="submit" class="btn" id="submit-btn">Continuer vers le vote</button>
+    </form>
+    <a href="/" class="back-link">← Retour à l'accueil</a>
+  </div>
+  <script>
+    document.getElementById('mat').addEventListener('input', e => {
+      e.target.value = e.target.value.toUpperCase();
+    });
+    document.getElementById('login-form').addEventListener('submit', () => {
+      const btn = document.getElementById('submit-btn');
+      btn.disabled = true;
+      btn.textContent = 'Vérification…';
+    });
+  </script>
+</body>
+</html>

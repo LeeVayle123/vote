@@ -1,0 +1,91 @@
+{
+    "candidats_postules": [
+        {
+            "id": 1,
+            "nom_complet": "vayle vayle",
+            "matricule": "ISC/L2/2024/0001",
+            "photo": "/static/uploads/candidat_1_Daniella.jpg",
+            "promotion": "BAC1",
+            "filiere": "IAGE",
+            "poste_sollicite": "CP",
+            "description": "soyon modèle",
+            "votes": 2,
+            "date_inscription": "2026-06-02T16:29:09.569911",
+            "poste_final": "CP",
+            "rang": 1
+        },
+        {
+            "id": 2,
+            "nom_complet": "Helena",
+            "matricule": "0000000000",
+            "photo": "/static/uploads/candidat_2_hero.jpg",
+            "promotion": "BAC1",
+            "filiere": "IAGE",
+            "poste_sollicite": "CP",
+            "description": "let's be hellpfull",
+            "votes": 0,
+            "date_inscription": "2026-06-03T08:51:48.526951"
+        }
+    ],
+    "electeurs": [
+        {
+            "id": 1,
+            "nom": "vayle",
+            "postnom": "kas",
+            "prenom": "vayle",
+            "matricule": "2024021018",
+            "promotion": "BAC1",
+            "filiere": "IAGE",
+            "date_inscription": "2026-06-02T16:26:31.621721"
+        },
+        {
+            "id": 2,
+            "nom": "lee",
+            "postnom": "VAYLE",
+            "prenom": "vayle",
+            "matricule": "2022021018",
+            "promotion": "BAC1",
+            "filiere": "IAGE",
+            "date_inscription": "2026-06-03T06:31:23.807519"
+        },
+        {
+            "id": 3,
+            "nom": "helena",
+            "postnom": "kas",
+            "prenom": "Lee",
+            "matricule": "1111111111",
+            "promotion": "BAC1",
+            "filiere": "IAGE",
+            "date_inscription": "2026-06-03T07:06:12.902211"
+        }
+    ],
+    "votes": [
+        {
+            "electeur_id": 1,
+            "candidat_id": 1,
+            "timestamp": "2026-06-02T17:07:00.990652"
+        },
+        {
+            "electeur_id": 2,
+            "candidat_id": 1,
+            "timestamp": "2026-06-03T06:58:34.498363"
+        }
+    ],
+    "resultats_publies": true,
+    "classement_final": [
+        {
+            "id": 1,
+            "nom_complet": "vayle vayle",
+            "matricule": "ISC/L2/2024/0001",
+            "photo": "/static/uploads/candidat_1_Daniella.jpg",
+            "promotion": "BAC1",
+            "filiere": "IAGE",
+            "poste_sollicite": "CP",
+            "description": "soyon modèle",
+            "votes": 2,
+            "date_inscription": "2026-06-02T16:29:09.569911",
+            "poste_final": "CP",
+            "rang": 1
+        }
+    ]
+}

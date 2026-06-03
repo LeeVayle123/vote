@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>S·Vote — Connexion</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}"/>
+
+</head>
+</head>
+<body>
+  <div class="blob blob-1"></div>
+  <div class="blob blob-2"></div>
+  <div class="blob blob-3"></div>
+
+  <div class="login-box">
+    <div class="login-logo">S<span>·</span>Vote</div>
+    <p class="login-sub">Système de vote électronique sécurisé — Identifiez-vous pour participer</p>
+
+    <div class="steps">
+      <div class="step-dot active"></div>
+      <div class="step-dot active"></div>
+      <div class="step-dot"></div>
+    </div>
+
+    {% if error %}
+    <div class="error-msg">
+      <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      {{ error }}
+    </div>
+    {% endif %}
+
+    <form method="POST" action="/electeur/login" autocomplete="off">
+      <div class="form-row">
+        <div class="form-group">
+          <label>Nom</label>
+          <input type="text" name="nom" placeholder="Ex: MUKENDI" required/>
+        </div>
+        <div class="form-group">
+          <label>Post-nom</label>
+          <input type="text" name="postnom" placeholder="Ex: KALALA" required/>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Prénom</label>
+        <input type="text" name="prenom" placeholder="Ex: Jean-Pierre" required/>
+      </div>
+      <div class="form-group">
+        <label>Matricule</label>
+        <input type="text" name="matricule" placeholder="Ex: ISC/L2/2024/001" required/>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Promotion</label>
+          <select name="promotion" required>
+            <option value="" disabled selected>Choisir...</option>
+            <option value="G1 Informatique">G1 Informatique</option>
+            <option value="G2 Informatique">G2 Informatique</option>
+            <option value="G3 Informatique">G3 Informatique</option>
+            <option value="L1 Informatique">L1 Informatique</option>
+            <option value="L2 Informatique">L2 Informatique</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Filière</label>
+          <select name="filiere" required>
+            <option value="" disabled selected>Choisir...</option>
+            <option value="Génie Logiciel">Génie Logiciel</option>
+            <option value="Réseaux & Télécoms">Réseaux & Télécoms</option>
+            <option value="Systèmes d'Information">Systèmes d'Information</option>
+            <option value="Intelligence Artificielle">Intelligence Artificielle</option>
+            <option value="Base de Données">Base de Données</option>
+          </select>
+        </div>
+      </div>
+
+      <button type="submit" class="btn-login">Accéder au tableau de bord →</button>
+    </form>
+
+    <div class="divider"></div>
+    <p class="info-note">🔒 Vos données sont protégées. Un seul vote par matricule est autorisé.</p>
+  </div>
+</body>
+</html>

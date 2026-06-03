@@ -1,0 +1,967 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Choisir un candidat — S·Vote</title>
+  <meta name="description" content="Choisissez votre candidat et votez en toute sécurité sur S·Vote.">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body {
+      min-height: 100vh;
+      font-family: 'Inter', system-ui, sans-serif;
+      background: linear-gradient(135deg, #f0f4ff 0%, #ece9ff 50%, #f5f0ff 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    /* ── Phone Frame ── */
+    .phone-frame {
+      width: min(400px, 100%);
+      min-height: 820px;
+      max-height: 94vh;
+      background: #f8f7ff;
+      border-radius: 52px;
+      box-shadow:
+        0 0 0 1px rgba(0,0,0,.07),
+        0 24px 60px rgba(99,56,242,.14),
+        0 60px 120px rgba(99,56,242,.07);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+
+    .notch {
+      position: absolute;
+      top: 16px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 120px;
+      height: 10px;
+      background: #e5e7eb;
+      border-radius: 999px;
+      z-index: 50;
+    }
+
+    /* ── Header ── */
+    .app-header {
+      background: #fff;
+      padding: 42px 22px 18px;
+      border-bottom: 1px solid #f0f0f0;
+      position: relative;
+      z-index: 5;
+    }
+    .header-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+    .s-logo {
+      display: flex; align-items: center; gap: 8px;
+    }
+    .s-logo-dot {
+      width: 30px; height: 30px;
+      background: linear-gradient(135deg, #6338f2, #a78bfa);
+      border-radius: 9px;
+      display: flex; align-items: center; justify-content: center;
+      color: #fff; font-weight: 900; font-size: .9rem;
+      box-shadow: 0 4px 14px rgba(99,56,242,.3);
+    }
+    .s-logo-text { font-weight: 800; font-size: 1rem; color: #1e1b4b; letter-spacing: -.2px; }
+
+    .logout-btn {
+      background: #f3f4f6; border: none; border-radius: 10px;
+      padding: 7px 13px; font-size: .8rem; font-weight: 600;
+      color: #6b7280; cursor: pointer; transition: background .15s;
+      text-decoration: none; display: inline-block;
+    }
+    .logout-btn:hover { background: #e5e7eb; }
+
+    /* ── Alert Already Voted ── */
+    .alert-already-voted {
+      display: flex; gap: 12px; padding: 14px 16px;
+      margin: 12px; border-radius: 14px;
+      background: #fef3c7; border: 1px solid #fce08a;
+      color: #92400e; font-size: .88rem; line-height: 1.4;
+    }
+    .alert-already-voted svg {
+      color: #d97706; flex-shrink: 0; margin-top: 1px;
+    }
+    .alert-already-voted strong { display: block; color: #d97706; font-weight: 700; margin-bottom: 2px; }
+    .alert-already-voted p { margin: 0; color: #92400e; }
+
+    .header-greeting {
+      font-size: 1.15rem; font-weight: 900; color: #1e1b4b; letter-spacing: -.3px;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .header-promo {
+      font-size: .82rem; color: #6b7280; margin-top: 3px;
+    }
+    .header-promo strong { color: #6338f2; font-weight: 700; }
+
+    .progress-bar-wrap {
+      height: 4px; background: #f0f0f0; border-radius: 999px; margin-top: 12px;
+    }
+    .progress-bar {
+      height: 4px; border-radius: 999px;
+      background: linear-gradient(90deg, #6338f2, #a78bfa);
+      width: 33%; transition: width .5s ease;
+    }
+
+    /* ── Flash messages ── */
+    .flash-wrap {
+      padding: 10px 16px 0;
+      display: flex; flex-direction: column; gap: 8px;
+    }
+    .flash-msg {
+      display: flex; align-items: flex-start; gap: 10px;
+      background: #fef2f2; border: 1px solid #fecaca;
+      border-radius: 12px; padding: 12px 14px;
+      font-size: .85rem; color: #dc2626; font-weight: 500;
+      line-height: 1.4; animation: slideDown .35s ease;
+    }
+    @keyframes slideDown { from { transform: translateY(-10px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+    /* ── Candidate List (scrollable) ── */
+    .candidates-section {
+      flex: 1; overflow-y: auto; padding: 18px 16px 24px;
+      scroll-behavior: smooth;
+      -webkit-overflow-scrolling: touch;
+    }
+    .candidates-section::-webkit-scrollbar { width: 4px; }
+    .candidates-section::-webkit-scrollbar-thumb { background: #d8d0ff; border-radius: 4px; }
+
+    .section-label {
+      font-size: .76rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 1px; color: #9ca3af; margin-bottom: 14px;
+    }
+
+    /* Candidate Cards — compact horizontal layout */
+    .cand-list { display: flex; flex-direction: column; gap: 12px; }
+
+    .cand-card {
+      background: #fff;
+      border: 2px solid transparent;
+      border-radius: 20px;
+      overflow: hidden;
+      cursor: pointer;
+      transition: transform .25s cubic-bezier(.34,1.56,.64,1), box-shadow .25s, border-color .25s;
+      box-shadow: 0 2px 12px rgba(0,0,0,.04);
+      position: relative;
+      display: flex;
+      flex-direction: row;
+      align-items: stretch;
+    }
+    .cand-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 28px rgba(99,56,242,.12);
+    }
+    .cand-card.disabled:hover {
+      transform: none;
+      box-shadow: 0 2px 12px rgba(0,0,0,.04);
+    }
+    .cand-card.voted-choice {
+      border-color: #f59e0b;
+      box-shadow: 0 6px 24px rgba(245,158,11,.16);
+      background: linear-gradient(135deg, #fffef8 0%, #fff 100%);
+    }
+    .cand-card.selected {
+      border-color: #6338f2;
+      box-shadow: 0 6px 24px rgba(99,56,242,.2);
+      transform: scale(1.01);
+    }
+    .cand-card.selected::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(99,56,242,.04), transparent);
+      pointer-events: none;
+      border-radius: 18px;
+    }
+
+    /* Selected badge */
+    .selected-badge {
+      position: absolute;
+      top: 10px; right: 10px;
+      width: 26px; height: 26px;
+      background: #6338f2;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 4px 14px rgba(99,56,242,.4);
+      opacity: 0; transform: scale(0.4);
+      transition: opacity .3s, transform .35s cubic-bezier(.34,1.56,.64,1);
+      z-index: 5;
+    }
+    .cand-card.selected .selected-badge { opacity: 1; transform: scale(1); }
+
+    .cand-photo-wrap {
+      position: relative; overflow: hidden;
+      width: 100px; min-height: 100px;
+      flex-shrink: 0;
+    }
+    .voted-medal {
+      position: absolute;
+      top: 8px;
+      left: 8px;
+      z-index: 6;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      background: rgba(255,255,255,.95);
+      color: #92400e;
+      border: 1px solid rgba(245,158,11,.25);
+      border-radius: 999px;
+      padding: 4px 7px;
+      font-size: .62rem;
+      font-weight: 800;
+      box-shadow: 0 4px 10px rgba(245,158,11,.18);
+    }
+    .voted-medal svg {
+      width: 11px; height: 11px; flex-shrink: 0;
+    }
+    .cand-photo {
+      width: 100%; height: 100%;
+      object-fit: cover; display: block;
+      transition: transform .4s ease;
+    }
+    .cand-card:hover .cand-photo { transform: scale(1.05); }
+    .cand-card.selected .cand-photo { transform: scale(1.03); }
+
+    .photo-overlay {
+      position: absolute; inset: 0;
+      background: linear-gradient(to bottom, transparent 50%, rgba(30,27,75,.35) 100%);
+    }
+
+    .cand-promo-badge {
+      position: absolute; bottom: 6px; left: 6px;
+      background: rgba(99,56,242,.85);
+      backdrop-filter: blur(8px);
+      color: #fff; font-size: .6rem; font-weight: 700;
+      padding: 3px 7px; border-radius: 999px;
+      letter-spacing: .2px;
+      white-space: nowrap;
+    }
+
+    .cand-body {
+      padding: 12px 14px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      min-width: 0;
+    }
+    .cand-name {
+      font-size: .93rem; font-weight: 800;
+      color: #1e1b4b; margin-bottom: 2px; letter-spacing: -.2px;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .cand-role {
+      font-size: .78rem; font-weight: 600; color: #6338f2;
+      margin-bottom: 4px;
+    }
+    .cand-desc {
+      font-size: .78rem; color: #6b7280; line-height: 1.4;
+      display: -webkit-box; -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical; overflow: hidden;
+    }
+
+    .cand-footer {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-top: 8px; padding-top: 8px;
+      border-top: 1px solid #f3f4f6;
+    }
+    .cand-votes {
+      font-size: .72rem; color: #9ca3af; display: flex; align-items: center; gap: 4px;
+    }
+    .voted-label {
+      font-size: .72rem; font-weight: 700; color: #d97706;
+      display: inline-flex; align-items: center; gap: 4px;
+    }
+    .tap-hint {
+      font-size: .72rem; font-weight: 600; color: #a78bfa;
+    }
+
+    /* Empty state */
+    .empty-state {
+      text-align: center; padding: 40px 20px; color: #9ca3af;
+    }
+    .empty-icon { font-size: 3rem; margin-bottom: 12px; }
+    .empty-title { font-weight: 700; color: #6b7280; margin-bottom: 6px; }
+
+    /* ── Overlay / Modal ── */
+    .overlay-bg {
+      position: fixed; inset: 0;
+      background: rgba(30,27,75,.35);
+      backdrop-filter: blur(6px);
+      display: none; align-items: flex-end; justify-content: center;
+      z-index: 100; padding: 0;
+      animation: fadeIn .2s ease;
+    }
+    .overlay-bg.active { display: flex; }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+    .modal {
+      width: min(400px, 100%);
+      background: #fff;
+      border-radius: 32px 32px 0 0;
+      padding: 24px 24px 32px;
+      animation: slideUp .4s cubic-bezier(.34,1.56,.64,1);
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+    @keyframes slideUp {
+      from { transform: translateY(40%); opacity: 0; }
+      to   { transform: translateY(0); opacity: 1; }
+    }
+
+    .modal-handle {
+      width: 40px; height: 4px;
+      background: #e5e7eb; border-radius: 999px;
+      margin: 0 auto 20px;
+    }
+
+    .modal-cand-preview {
+      display: flex; gap: 14px; align-items: center;
+      background: linear-gradient(135deg, #f5f3ff, #ede9fe);
+      border: 1.5px solid rgba(99,56,242,.15);
+      border-radius: 20px; padding: 14px;
+      margin-bottom: 20px;
+    }
+    .modal-cand-photo {
+      width: 64px; height: 64px;
+      border-radius: 18px; object-fit: cover;
+      border: 2px solid rgba(99,56,242,.25);
+      flex-shrink: 0;
+    }
+    .modal-cand-info .cand-name { font-size: .97rem; }
+    .modal-cand-info .cand-role { margin-bottom: 4px; }
+    .modal-cand-info .cand-promo-tag {
+      font-size: .78rem; color: #9ca3af;
+    }
+
+    .modal-section-title {
+      font-size: .82rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: .8px; color: #9ca3af; margin-bottom: 12px;
+    }
+    .modal-title {
+      font-size: 1.1rem; font-weight: 900; color: #1e1b4b;
+      margin-bottom: 4px; letter-spacing: -.3px;
+    }
+    .modal-subtitle {
+      font-size: .88rem; color: #6b7280; line-height: 1.5; margin-bottom: 18px;
+    }
+
+    /* Form Fields */
+    .field-group { margin-bottom: 14px; }
+    .field-label {
+      font-size: .82rem; font-weight: 600; color: #374151; margin-bottom: 8px; display: block;
+    }
+    .select-field, .input-field-modal {
+      width: 100%;
+      border: 2px solid #e5e7eb; border-radius: 14px;
+      padding: 13px 16px;
+      font-size: .93rem; color: #1f2937;
+      background: #f9fafb; font-family: inherit;
+      outline: none;
+      transition: border-color .2s, box-shadow .2s, background .2s;
+      -webkit-appearance: none; appearance: none;
+    }
+    .select-field:focus, .input-field-modal:focus {
+      border-color: #6338f2; background: #fff;
+      box-shadow: 0 0 0 4px rgba(99,56,242,.1);
+    }
+    .select-wrap { position: relative; }
+    .select-wrap::after {
+      content: '▾'; position: absolute;
+      right: 16px; top: 50%; transform: translateY(-50%);
+      color: #9ca3af; pointer-events: none; font-size: .9rem;
+    }
+
+    /* Eligibility notice */
+    .eligibility-notice {
+      display: none; align-items: flex-start; gap: 10px;
+      border-radius: 14px; padding: 12px 14px;
+      font-size: .84rem; font-weight: 500; line-height: 1.45;
+      margin-bottom: 14px;
+    }
+    .eligibility-notice.ok {
+      background: #f0fdf4; border: 1px solid #bbf7d0; color: #16a34a;
+      display: flex;
+    }
+    .eligibility-notice.err {
+      background: #fef2f2; border: 1px solid #fecaca; color: #dc2626;
+      display: flex;
+    }
+
+    /* Action buttons */
+    .modal-actions { display: flex; flex-direction: column; gap: 10px; margin-top: 4px; }
+    .btn-vote-confirm {
+      width: 100%;
+      background: linear-gradient(135deg, #6338f2, #8b5cf6);
+      color: #fff; border: none; border-radius: 18px;
+      padding: 17px; font-size: .97rem; font-weight: 800;
+      cursor: pointer; letter-spacing: .2px;
+      box-shadow: 0 8px 28px rgba(99,56,242,.35);
+      transition: transform .2s, box-shadow .2s, opacity .2s;
+      position: relative; overflow: hidden;
+    }
+    .btn-vote-confirm::after {
+      content: '';
+      position: absolute; inset: 0;
+      background: linear-gradient(135deg, rgba(255,255,255,.15), transparent);
+      pointer-events: none;
+    }
+    .btn-vote-confirm:hover { transform: translateY(-2px); box-shadow: 0 14px 40px rgba(99,56,242,.42); }
+    .btn-vote-confirm:disabled { opacity: .5; cursor: not-allowed; transform: none; }
+
+    .btn-cancel {
+      width: 100%; background: #f3f4f6; color: #6b7280;
+      border: none; border-radius: 16px; padding: 15px;
+      font-size: .9rem; font-weight: 600; cursor: pointer;
+      transition: background .15s;
+    }
+    .btn-cancel:hover { background: #e5e7eb; }
+
+    /* ── Success Overlay ── */
+    .success-overlay {
+      position: fixed; inset: 0;
+      background: #fff;
+      display: none; flex-direction: column;
+      align-items: center; justify-content: center;
+      z-index: 200; padding: 40px;
+      text-align: center;
+    }
+    .success-overlay.active { display: flex; animation: fadeIn .35s ease; }
+
+    .success-circle {
+      width: 110px; height: 110px;
+      background: linear-gradient(135deg, #6338f2, #a78bfa);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 28px;
+      box-shadow: 0 20px 60px rgba(99,56,242,.4);
+      animation: popIn .6s cubic-bezier(.34,1.56,.64,1);
+    }
+    @keyframes popIn { from { transform: scale(0); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+    .success-title {
+      font-size: 1.65rem; font-weight: 900; color: #1e1b4b;
+      margin-bottom: 12px; letter-spacing: -.4px;
+    }
+    .success-sub {
+      font-size: .97rem; color: #6b7280; line-height: 1.6;
+      max-width: 300px; margin-bottom: 36px;
+    }
+    .success-cand-name {
+      font-size: 1rem; font-weight: 700; color: #6338f2; display: block; margin-bottom: 10px;
+    }
+
+    /* Responsive: on small screens fill full width */
+    @media (max-width: 440px) {
+      html, body { padding: 0; align-items: flex-start; }
+      .phone-frame {
+        border-radius: 0;
+        min-height: 100vh;
+        max-height: none;
+        box-shadow: none;
+      }
+      .notch { display: none; }
+      .app-header { padding-top: 20px; }
+    }
+    @media (min-width: 900px) {
+      html, body { padding: 30px; }
+      .phone-frame {
+        width: min(720px, 95%);
+        min-height: 90vh;
+        max-height: none;
+      }
+    }
+
+    .bottom-nav {
+      display: flex;
+      justify-content: space-between;
+      gap: 18px;
+      padding: 12px 18px 18px;
+      background: transparent;
+      border-top: 1px solid rgba(99,56,242,.12);
+      position: sticky;
+      bottom: 0;
+      z-index: 10;
+    }
+    .nav-item {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 42px;
+      height: 42px;
+      text-decoration: none;
+      color: #6b7280;
+      transition: transform .18s ease, color .18s ease;
+    }
+    .nav-item:hover {
+      transform: scale(1.05);
+      color: #4338ca;
+    }
+    .nav-item-primary {
+      color: #4f46e5;
+    }
+    .nav-icon { font-size: 1.6rem; line-height: 1; }
+    .nav-icon svg,
+    .greeting-icon svg,
+    .btn-icon svg {
+      width: 1.1rem;
+      height: 1.1rem;
+      display: block;
+    }
+    .nav-icon svg { width: 1.35rem; height: 1.35rem; }
+    .nav-label { display: none; }
+  </style>
+</head>
+<body>
+
+  <div class="phone-frame" role="main">
+    <div class="notch"></div>
+
+    <!-- Header -->
+    <div class="app-header">
+      <div class="header-top">
+        <div class="s-logo">
+          <div class="s-logo-dot">S</div>
+          <div class="s-logo-text">S·Vote</div>
+        </div>
+        <a href="{{ url_for('voter_logout') }}" class="logout-btn">Se déconnecter</a>
+      </div>
+      <div class="header-greeting">
+        Bonjour, {{ electeur_nom.split()[0] }}
+        <span class="greeting-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M8 14c0-2.2 1.8-4 4-4s4 1.8 4 4"/>
+            <path d="M12 10a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Z"/>
+            <path d="M7 14a5 5 0 1 1 10 0"/>
+            <path d="M5 12a7 7 0 1 1 14 0"/>
+          </svg>
+        </span>
+      </div>
+      <div class="header-promo">
+        <strong>{{ promotion }}</strong> — {{ filiere }} · Choisissez votre candidat
+      </div>
+      <div class="progress-bar-wrap">
+        <div class="progress-bar" id="progress-bar"></div>
+      </div>
+    </div>
+
+    {% if a_vote %}
+    <!-- Alert: Already voted -->
+    <div class="alert-already-voted">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M12 16v-4M12 8h.01"></path></svg>
+      <div>
+        <strong>Vous avez déjà voté</strong>
+        <p>Votre vote a été enregistré. Vous pouvez consulter les résultats une fois publiés.</p>
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- Candidates List -->
+    <div class="candidates-section">
+      <div class="section-label">
+        {% if candidats %}{{ candidats|length }} candidat{{ 's' if candidats|length > 1 }} disponible{{ 's' if candidats|length > 1 }}{% else %}Aucun candidat{% endif %}
+      </div>
+
+      <div class="cand-list">
+        {% if candidats and candidats|length > 0 %}
+          {% for c in candidats %}
+          <div
+            class="cand-card{% if a_vote %} disabled{% endif %}{% if a_vote and c.id == voted_candidat_id %} voted-choice{% endif %}"
+            style="{% if a_vote %}cursor: default;{% endif %}"
+            id="card-{{ c.id }}"
+            data-id="{{ c.id }}"
+            data-name="{{ c.nom_complet }}"
+            data-photo="{{ c.photo if c.photo else '' }}"
+            data-role="{{ c.poste_sollicite }}"
+            data-promo="{{ c.promotion }}"
+            data-filiere="{{ c.filiere }}"
+            data-desc="{{ c.description }}"
+            {% if not a_vote %}onclick="selectCandidat(this)"{% endif %}
+            tabindex="0"
+            role="button"
+            aria-label="{% if a_vote and c.id == voted_candidat_id %}Votre choix : {{ c.nom_complet }}{% else %}Sélectionner {{ c.nom_complet }}{% endif %}"
+            {% if not a_vote %}onkeydown="if(event.key==='Enter'||event.key===' ') selectCandidat(this)"{% endif %}
+          >
+            {% if a_vote and c.id == voted_candidat_id %}
+            <div class="voted-medal" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 2 14.5 8.5 21 9l-4.2 3.6 1.2 5.9L12 16.6 6 18.5l1.2-5.9L3 9l6.5-.5Z"/>
+              </svg>
+              Votre choix
+            </div>
+            {% endif %}
+            <!-- Selected checkmark badge -->
+            <div class="selected-badge" aria-hidden="true">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+            </div>
+
+            <!-- Photo -->
+            <div class="cand-photo-wrap">
+              <img
+                class="cand-photo"
+                src="{{ c.photo if c.photo else url_for('static', filename='uploads/default-avatar.png') }}"
+                alt="Photo de {{ c.nom_complet }}"
+                onerror="this.src='{{ url_for('static', filename='uploads/default-avatar.png') }}'"
+                loading="lazy"
+              >
+              <div class="photo-overlay"></div>
+              <div class="cand-promo-badge">{{ c.promotion }} · {{ c.filiere }}</div>
+            </div>
+
+            <!-- Body -->
+            <div class="cand-body">
+              <div class="cand-name">{{ c.nom_complet }}</div>
+              <div class="cand-role">{{ c.poste_sollicite }}</div>
+              {% if c.description %}
+                <div class="cand-desc">{{ c.description }}</div>
+              {% endif %}
+              <div class="cand-footer">
+                <span class="cand-votes">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                  {{ c.votes if c.votes is defined else 0 }} vote{{ 's' if (c.votes is defined and c.votes != 1) else '' }}
+                </span>
+                {% if a_vote and c.id == voted_candidat_id %}
+                <span class="voted-label">✓ Votre choix</span>
+                {% else %}
+                <span class="tap-hint">Appuyer pour sélectionner →</span>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+
+        {% else %}
+          <div class="empty-state">
+            <div class="empty-icon"></div>
+            <div class="empty-title">Aucun candidat disponible</div>
+            <p>Aucun candidat n'est inscrit pour votre promotion pour l'instant.</p>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <nav class="bottom-nav" aria-label="Navigation mobile">
+      <a href="{{ url_for('notifications_mobile') }}" class="nav-item" aria-label="Notifications">
+        <span class="nav-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M15 17H5l1.5-2.5V10a4.5 4.5 0 1 1 9 0v4.5L19 17h-4"/>
+            <path d="M10 17v1a2 2 0 0 0 4 0v-1"/>
+          </svg>
+        </span>
+      </a>
+      <a href="{{ url_for('resultats_mobile') }}" class="nav-item nav-item-primary" aria-label="Voir les résultats">
+        <span class="nav-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 19h16"/>
+            <path d="M7 15V9"/>
+            <path d="M12 15V5"/>
+            <path d="M17 15v-3"/>
+          </svg>
+        </span>
+      </a>
+      <a href="{{ url_for('settings_mobile') }}" class="nav-item" aria-label="Paramètres">
+        <span class="nav-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="3"/>
+            <path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.2a1.7 1.7 0 0 0-1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.2a1.7 1.7 0 0 0 1.5-1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3h.1a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.2a1.7 1.7 0 0 0 1 1.5h.1a1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8v.1a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.2a1.7 1.7 0 0 0-1.5 1Z"/>
+          </svg>
+        </span>
+      </a>
+    </nav>
+  </div>
+
+  <!-- ══════════ MODAL — Confirmer le vote ══════════ -->
+  <div id="overlay" class="overlay-bg" role="dialog" aria-modal="true" aria-labelledby="modal-main-title">
+    <div class="modal" id="vote-modal">
+      <div class="modal-handle"></div>
+
+      <!-- Candidate mini preview -->
+      <div class="modal-cand-preview">
+        <img id="modal-photo" class="modal-cand-photo" src="" alt="">
+        <div class="modal-cand-info">
+          <div id="modal-cand-name" class="cand-name">—</div>
+          <div id="modal-cand-role" class="cand-role">—</div>
+          <div id="modal-cand-promo" class="cand-promo-tag">—</div>
+        </div>
+      </div>
+
+      <!-- Step title -->
+      <div class="modal-section-title">Étape 2 sur 2 — Confirmation</div>
+      <div class="modal-title" id="modal-main-title">Confirmez votre vote</div>
+      <div class="modal-subtitle">Entrez votre promotion et votre filière pour valider votre identité avant de voter.</div>
+
+      <!-- Promotion selector -->
+      <div class="field-group">
+        <label class="field-label" for="sel-promotion">Votre promotion</label>
+        <div class="select-wrap">
+          <select id="sel-promotion" class="select-field" onchange="checkEligibility()">
+            <option value="">— Sélectionnez —</option>
+            <option value="BAC1">BAC 1</option>
+            <option value="BAC2">BAC 2</option>
+            <option value="BAC3">BAC 3</option>
+            <option value="BAC4">BAC 4</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Filière selector -->
+      <div class="field-group">
+        <label class="field-label" for="sel-filiere">Votre filière</label>
+        <div class="select-wrap">
+          <select id="sel-filiere" class="select-field" onchange="checkEligibility()">
+            <option value="">— Sélectionnez —</option>
+            <option value="IA">I.A</option>
+            <option value="GL">G.L</option>
+            <option value="SI">S.I</option>
+            <option value="IAGE">IAGE</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Eligibility notice -->
+      <div id="elig-notice" class="eligibility-notice">
+        <svg id="elig-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" style="flex-shrink:0;margin-top:1px"></svg>
+        <span id="elig-text">—</span>
+      </div>
+
+      <!-- Form hidden fields -->
+      <form id="vote-form" method="POST" action="{{ url_for('vote') }}">
+        <input type="hidden" name="candidat_id" id="hidden-candidat-id">
+      </form>
+
+      <div class="modal-actions">
+        <button
+          type="button"
+          id="btn-vote-final"
+          class="btn-vote-confirm"
+          onclick="submitVote()"
+          disabled
+          aria-label="Confirmer le vote"
+        >
+          <span class="btn-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M5 12h14"/>
+              <path d="m12 5 7 7-7 7"/>
+            </svg>
+          </span>
+          Voter pour ce candidat
+        </button>
+        <button type="button" class="btn-cancel" onclick="closeModal()" aria-label="Annuler">Annuler</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════ SUCCESS OVERLAY ══════════ -->
+  <div id="success-overlay" class="success-overlay" aria-live="polite">
+    <div class="success-circle">
+      <svg width="52" height="52" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="20 6 9 17 4 12"/>
+      </svg>
+    </div>
+    <div class="success-title">Vote enregistré !</div>
+    <span class="success-cand-name" id="success-cand-name">—</span>
+    <p class="success-sub">Votre vote a été transmis avec succès. Merci pour votre participation au scrutin.</p>
+    <p style="font-size:.82rem;color:#9ca3af">Redirection en cours…</p>
+  </div>
+
+  <script>
+    // ── State ──
+    let selectedCard   = null;
+    let selectedData   = {};
+    let eligibilityOK  = false;
+    const userHasVoted = {{ 'true' if a_vote else 'false' }};
+
+    // Prefill from session (injected by Flask)
+    const sessionPromo   = "{{ promotion | upper }}";
+    const sessionFiliere = "{{ filiere | upper }}";
+
+    // ── Select a candidate (click on card) ──
+    function selectCandidat(card) {
+      if (userHasVoted) return; // Empêcher si déjà voté
+      
+      // Deselect previous
+      if (selectedCard && selectedCard !== card) {
+        selectedCard.classList.remove('selected');
+      }
+      card.classList.toggle('selected');
+      selectedCard = card.classList.contains('selected') ? card : null;
+
+      if (!selectedCard) return;
+
+      // Gather data
+      selectedData = {
+        id:     card.dataset.id,
+        name:   card.dataset.name,
+        photo:  card.dataset.photo,
+        role:   card.dataset.role,
+        promo:  card.dataset.promo,
+        filiere: card.dataset.filiere,
+        desc:   card.dataset.desc,
+      };
+
+      // Animate progress
+      document.getElementById('progress-bar').style.width = '66%';
+
+      // Fill modal
+      const defaultAvatar = "{{ url_for('static', filename='uploads/default-avatar.png') }}";
+      document.getElementById('modal-photo').src = selectedData.photo || defaultAvatar;
+      document.getElementById('modal-photo').alt = selectedData.name;
+      document.getElementById('modal-cand-name').textContent = selectedData.name;
+      document.getElementById('modal-cand-role').textContent = selectedData.role;
+      document.getElementById('modal-cand-promo').textContent = `${selectedData.promo} · ${selectedData.filiere}`;
+      document.getElementById('hidden-candidat-id').value = selectedData.id;
+
+      // Pre-fill from session
+      const selPromo = document.getElementById('sel-promotion');
+      const selFil   = document.getElementById('sel-filiere');
+
+      if (sessionPromo && selPromo.querySelector(`option[value="${sessionPromo}"]`)) {
+        selPromo.value = sessionPromo;
+      }
+      if (sessionFiliere) {
+        // Find option by value (case-insensitive)
+        for (let opt of selFil.options) {
+          if (opt.value.toUpperCase() === sessionFiliere.toUpperCase()) {
+            selFil.value = opt.value; break;
+          }
+        }
+      }
+
+      checkEligibility();
+      openModal();
+    }
+
+    // ── Open / Close Modal ──
+    function openModal() {
+      document.getElementById('overlay').classList.add('active');
+      document.body.style.overflow = 'hidden';
+    }
+    function closeModal() {
+      document.getElementById('overlay').classList.remove('active');
+      document.body.style.overflow = '';
+      // Reset eligibility display
+      document.getElementById('elig-notice').style.display = 'none';
+      document.getElementById('btn-vote-final').disabled = true;
+      document.getElementById('progress-bar').style.width = '33%';
+      // Deselect card
+      if (selectedCard) { selectedCard.classList.remove('selected'); selectedCard = null; }
+    }
+
+    // Close when clicking outside modal
+    document.getElementById('overlay').addEventListener('click', function(e) {
+      if (e.target === this) closeModal();
+    });
+
+    // ── Eligibility Check ──
+    function checkEligibility() {
+      const selPromo = document.getElementById('sel-promotion').value.trim().toUpperCase();
+      const selFil   = document.getElementById('sel-filiere').value.trim().toUpperCase();
+      const noticeEl = document.getElementById('elig-notice');
+      const textEl   = document.getElementById('elig-text');
+      const iconEl   = document.getElementById('elig-icon');
+      const btnFinal = document.getElementById('btn-vote-final');
+
+      if (!selPromo || !selFil || !selectedData.id) {
+        noticeEl.className = 'eligibility-notice';
+        noticeEl.style.display = 'none';
+        btnFinal.disabled = true;
+        eligibilityOK = false;
+        return;
+      }
+
+      const candPromo  = (selectedData.promo  || '').toUpperCase();
+      const candFil    = (selectedData.filiere || '').toUpperCase();
+
+      let allowed = true;
+      let reason  = '';
+
+      // Rule 1: BAC2 cannot vote for BAC1 TECHNOLOGIE
+      if (selPromo === 'BAC2' && candPromo === 'BAC1' && candFil === 'TECHNOLOGIE') {
+        allowed = false;
+        reason  = "Un étudiant de BAC2 ne peut pas voter pour un candidat de BAC1 en Technologie.";
+      }
+      // Rule 2: IAGE cannot vote for BAC1 TECHNOLOGIE
+      else if (selFil.includes('IAGE') && candPromo === 'BAC1' && candFil === 'TECHNOLOGIE') {
+        allowed = false;
+        reason  = "Un étudiant de IAGE ne peut pas voter pour un candidat de BAC1 en Technologie.";
+      }
+      // Rule 3: BAC1 IA <-> BAC1 GL cross-vote allowed
+      else if (selPromo === 'BAC1' && candPromo === 'BAC1') {
+        if ((selFil === 'IA' && candFil === 'GL') || (selFil === 'GL' && candFil === 'IA')) {
+          allowed = true;
+          reason  = "Vote inter-filière autorisé : IA ↔ GL en BAC1.";
+        } else if (selFil !== candFil) {
+          allowed = false;
+          reason  = `Votre filière (${selFil}) ne peut pas voter pour un candidat de la filière ${candFil}.`;
+        }
+      }
+      // General rule: promotions must match
+      else if (selPromo !== candPromo) {
+        allowed = false;
+        reason  = `Vous êtes en ${selPromo}, ce candidat est en ${candPromo}. Promotions incompatibles.`;
+      }
+      // General rule: filières must match (same promo)
+      else if (selFil !== candFil) {
+        allowed = false;
+        reason  = `Votre filière (${selFil}) ne vous permet pas de voter pour un candidat de la filière ${candFil}.`;
+      } else {
+        allowed = true;
+        reason  = `Vous êtes éligible — ${selPromo} · ${selFil}. Vous pouvez confirmer votre vote.`;
+      }
+
+      noticeEl.style.display = 'flex';
+      if (allowed) {
+        noticeEl.className = 'eligibility-notice ok';
+        iconEl.innerHTML = '<polyline points="20 6 9 17 4 12" stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" stroke="currentColor" fill="none"/>';
+        textEl.textContent = reason;
+        btnFinal.disabled = false;
+        document.getElementById('progress-bar').style.width = '100%';
+      } else {
+        noticeEl.className = 'eligibility-notice err';
+        iconEl.innerHTML = '<circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" fill="none"/><line x1="12" y1="8" x2="12" y2="12" stroke="currentColor" stroke-width="2"/><line x1="12" y1="16" x2="12.01" y2="16" stroke="currentColor" stroke-width="2"/>';
+        textEl.textContent = reason;
+        btnFinal.disabled = true;
+        document.getElementById('progress-bar').style.width = '66%';
+      }
+
+      eligibilityOK = allowed;
+    }
+
+    // ── Submit Vote ──
+    function submitVote() {
+      if (!eligibilityOK) return;
+
+      const btn = document.getElementById('btn-vote-final');
+      btn.disabled = true;
+      btn.textContent = 'Enregistrement…';
+
+      // Show success animation briefly then submit
+      const successOverlay = document.getElementById('success-overlay');
+      document.getElementById('success-cand-name').textContent = selectedData.name || '—';
+      successOverlay.classList.add('active');
+      document.getElementById('progress-bar').style.width = '100%';
+
+      setTimeout(() => {
+        document.getElementById('vote-form').submit();
+      }, 1800);
+    }
+
+    // ── Init ──
+    document.addEventListener('DOMContentLoaded', () => {
+      // Hide eligibility notice initially
+      document.getElementById('elig-notice').style.display = 'none';
+    });
+  </script>
+</body>
+</html>

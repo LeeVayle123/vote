@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>S·Vote — Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}"/>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+</head>
+<body>
+
+<!-- ══ SIDEBAR ══════════════════════════════════════════════════════════ -->
+<aside class="sidebar">
+  <div class="sidebar-logo">S<span>·</span>Vote</div>
+
+  <div class="sidebar-section-label">Menu Principal</div>
+  <nav class="sidebar-nav">
+    <a href="/dashboard" class="active" id="nav-dashboard">
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+      Dashboard
+    </a>
+    <a href="/candidats" id="nav-candidats">
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="9" cy="7" r="4"/><path d="M2 21v-2a4 4 0 014-4h6a4 4 0 014 4v2"/><path d="M16 3.13a4 4 0 010 7.75"/><path d="M21 21v-2a4 4 0 00-3-3.87"/></svg>
+      Candidats
+    </a>
+    <a href="/resultats" id="nav-resultats">
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      Résultats
+    </a>
+  </nav>
+
+  <div class="sidebar-section-label">Support</div>
+  <nav class="sidebar-nav">
+    <a href="#" id="nav-help">
+      <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      Aide
+    </a>
+  </nav>
+
+  <div class="sidebar-avatar">
+    <div class="avatar-circle">{{ session.get('etudiant_nom', 'É')[0] if session.get('etudiant_nom') else 'É' }}</div>
+    <div class="avatar-info">
+      <div class="name">{{ session.get('etudiant_nom', 'Étudiant') }}</div>
+      <div class="role">Électeur inscrit</div>
+    </div>
+  </div>
+</aside>
+
+<!-- ══ MAIN ══════════════════════════════════════════════════════════════ -->
+<main class="main">
+
+  <!-- Topbar -->
+  <div class="topbar">
+    <div class="topbar-title">
+      <h1>Tableau de bord</h1>
+      <p>Suivi en temps réel du vote</p>
+    </div>
+    <div class="topbar-right">
+      <div class="badge-vote {% if a_vote %}badge-voted{% else %}badge-pending{% endif %}">
+        {% if a_vote %}Vote enregistré{% else %}En attente{% endif %}
+      </div>
+      <a href="/logout" class="btn-logout">Déconnexion</a>
+    </div>
+  </div>
+
+  <!-- Content -->
+  <div class="content">
+
+    <!-- ── KPI Cards ── -->
+    <div class="stats-row">
+      <div class="stat-card">
+        <div class="card-icon icon-blue">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+        </div>
+        <div class="card-label">Électeurs inscrits</div>
+        <div class="card-value" id="stat-etudiants">{{ total_etudiants }}</div>
+      </div>
+
+      <div class="stat-card">
+        <div class="card-icon icon-green">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+        </div>
+        <div class="card-label">Votes exprimés</div>
+        <div class="card-value text-green" id="stat-votes">{{ total_votes }}</div>
+      </div>
+
+      <div class="stat-card">
+        <div class="card-icon icon-purple">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        </div>
+        <div class="card-label">Candidats</div>
+        <div class="card-value" id="stat-candidats">{{ total_candidats }}</div>
+      </div>
+
+      <div class="stat-card">
+        <div class="card-icon icon-yellow">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+        </div>
+        <div class="card-label">Taux de participation</div>
+        <div class="card-value text-yellow" id="stat-taux">{{ taux_participation }}%</div>
+      </div>
+    </div>
+
+    <!-- ── Row: Chart + Gauge ── -->
+    <div class="grid-3">
+
+      <!-- Bar Chart résultats -->
+      <div class="card">
+        <div class="card-header">
+          <h2>📊 Résultats en temps réel</h2>
+        </div>
+        <div class="card-body">
+          <div class="chart-wrap">
+            <canvas id="barChart"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- Gauge participation -->
+      <div class="card">
+        <div class="card-header">
+          <h2>🎯 Participation</h2>
+        </div>
+        <div class="gauge-wrap">
+          <div class="gauge-ring">
+            <svg width="130" height="130" viewBox="0 0 130 130">
+              <circle cx="65" cy="65" r="52" fill="none" stroke="rgba(255,255,255,.07)" stroke-width="12"/>
+              <circle cx="65" cy="65" r="52" fill="none"
+                stroke="url(#gaugeGrad)" stroke-width="12"
+                stroke-linecap="round"
+                stroke-dasharray="{{ (taux_participation / 100 * 326.7)|round(1) }} 326.7"
+                id="gauge-circle"/>
+              <defs>
+                <linearGradient id="gaugeGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                  <stop offset="0%" stop-color="#4f7fff"/>
+                  <stop offset="100%" stop-color="#7c5cfc"/>
+                </linearGradient>
+              </defs>
+            </svg>
+            <div class="gauge-center">
+              <div class="gauge-pct" id="gauge-pct">{{ taux_participation }}%</div>
+              <div class="gauge-label">participation</div>
+            </div>
+          </div>
+          <div class="gauge-stats">
+            <div class="gs-item">
+              <div class="gs-val text-green" id="g-votes">{{ total_votes }}</div>
+              <div class="gs-lbl">Ont voté</div>
+            </div>
+            <div class="gs-item">
+              <div class="gs-val" style="color:var(--text-2)" id="g-restant">{{ total_etudiants - total_votes }}</div>
+              <div class="gs-lbl">Restants</div>
+            </div>
+            <div class="gs-item">
+              <div class="gs-val" style="color:var(--accent)" id="g-total">{{ total_etudiants }}</div>
+              <div class="gs-lbl">Total</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Row: Leaderboard + Vote/Candidats ── -->
+    <div class="grid-2">
+
+      <!-- Classement -->
+      <div class="card">
+        <div class="card-header">
+          <h2>🏆 Classement des candidats</h2>
+          <a href="/resultats" class="see-all">Tous →</a>
+        </div>
+        <div class="card-body" style="padding:8px 20px">
+          <ul class="leaderboard-list" id="leaderboard">
+            {% for c in resultats_candidats %}
+            {% set rank = loop.index %}
+            {% set nom_parts = c.nom_complet.split() %}
+            {% set initials = nom_parts[0][0] ~ (nom_parts[1][0] if nom_parts | length is gt(1) else '') %}
+            <li class="lb-item">
+              <div class="lb-rank {% if rank==1 %}rank-1{% elif rank==2 %}rank-2{% elif rank==3 %}rank-3{% else %}rank-n{% endif %}">
+                {% if rank==1 %}🥇{% elif rank==2 %}🥈{% elif rank==3 %}🥉{% else %}{{ rank }}{% endif %}
+              </div>
+              <div class="lb-avatar">{{ initials }}</div>
+              <div class="lb-info">
+                <div class="lb-name">{{ c.nom_complet }}</div>
+                <div class="lb-filiere">{{ c.filiere }}</div>
+              </div>
+              <div class="lb-progress">
+                <div class="lb-bar-bg">
+                  <div class="lb-bar {% if rank==1 %}bar-1{% elif rank==2 %}bar-2{% elif rank==3 %}bar-3{% else %}bar-n{% endif %}"
+                       style="width:{{ c.pourcentage }}%"></div>
+                </div>
+              </div>
+              <div class="lb-votes">
+                <div class="votes-n">{{ c.nb_votes }}</div>
+                <div class="votes-l">votes</div>
+              </div>
+            </li>
+            {% endfor %}
+            {% if not resultats_candidats %}
+            <li style="padding:20px 0; text-align:center; color:var(--text-3); font-size:.85rem;">
+              Aucun vote enregistré
+            </li>
+            {% endif %}
+          </ul>
+        </div>
+      </div>
+
+      <!-- Vote ou Confirmation -->
+      <div class="card vote-section">
+        <div class="card-header">
+          <h2>🗳️ {% if a_vote %}Merci!{% else %}Voter{% endif %}</h2>
+        </div>
+
+        {% if a_vote %}
+        <div class="voted-banner">
+          <svg fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+          Votre vote a été enregistré
+        </div>
+        {% else %}
+        <form method="POST" action="/vote" id="vote-form">
+          <div class="vote-grid">
+            {% for c in candidats %}
+            {% set nom_parts = c.nom_complet.split() %}
+            {% set initials = nom_parts[0][0] ~ (nom_parts[1][0] if nom_parts | length is gt(1) else '') %}
+            <label class="vote-card" id="vc-{{ c.id }}" onclick="selectCard({{ c.id }})">
+              <input type="radio" name="candidat_id" value="{{ c.id }}" required/>
+              <div class="vc-avatar" style="background:linear-gradient(135deg, hsl({{ loop.index * 60 }},70%,55%), hsl({{ loop.index * 60 + 30 }},80%,45%))">{{ initials }}</div>
+              <div class="vc-content">
+                <div class="vc-name">{{ c.nom_complet }}</div>
+              </div>
+              <div class="vc-check">
+                <svg fill="none" stroke="white" stroke-width="3" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+              </div>
+            </label>
+            {% endfor %}
+          </div>
+          <button type="submit" class="btn-vote" id="btn-vote" disabled>
+            Confirmer mon vote
+          </button>
+        </form>
+        {% endif %}
+      </div>
+    </div>
+
+  </div><!-- /content -->
+</main>
+
+<script>
+  // ── Init sidebar ──
+  const name = "{{ session.get('etudiant_nom', 'Étudiant') }}";
+  const initials = name.split(' ').map(n=>n[0]).join('').toUpperCase().slice(0,2);
+  document.querySelector('.avatar-circle').textContent = initials;
+
+  // ── Bar Chart ──
+  const labels  = {{ resultats_candidats | map(attribute='nom') | list | tojson }};
+  const votes   = {{ resultats_candidats | map(attribute='nb_votes') | list | tojson }};
+  const pcts    = {{ resultats_candidats | map(attribute='pourcentage') | list | tojson }};
+
+  const ctx = document.getElementById('barChart').getContext('2d');
+  const barGradients = labels.map((_, i) => {
+    const g = ctx.createLinearGradient(0, 0, 0, 220);
+    const colors = [
+      ['#f5c542','#f5a623'],
+      ['#4f7fff','#7c5cfc'],
+      ['#22d3a5','#1ba87e'],
+      ['#f5475b','#c0392b'],
+    ];
+    const [c1,c2] = colors[i % colors.length];
+    g.addColorStop(0, c1); g.addColorStop(1, c2+'44');
+    return g;
+  });
+
+  const chart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: labels.map(l => l.split(' ').slice(0,2).join(' ')),
+      datasets: [{
+        label: 'Votes',
+        data: votes,
+        backgroundColor: barGradients,
+        borderRadius: 8,
+        borderSkipped: false,
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: '#12151f',
+          titleColor: '#eef0f8',
+          bodyColor: '#8890a4',
+          borderColor: 'rgba(255,255,255,.1)',
+          borderWidth: 1,
+          padding: 12,
+          callbacks: {
+            label: ctx => ` ${ctx.raw} votes`
+          }
+        }
+      },
+      scales: {
+        x: {
+          grid: { color: 'rgba(255,255,255,.04)' },
+          ticks: { color: '#8890a4', font: { size: 11, family: 'Inter' } }
+        },
+        y: {
+          grid: { color: 'rgba(255,255,255,.04)' },
+          ticks: { color: '#8890a4', font: { size: 11, family: 'Inter' }, stepSize: 1, beginAtZero: true }
+        }
+      }
+    }
+  });
+
+  // ── Vote card selection ──
+  function selectCard(id) {
+    document.querySelectorAll('.vote-card').forEach(c => c.classList.remove('selected'));
+    const card = document.getElementById('vc-'+id);
+    if (card) {
+      card.classList.add('selected');
+      card.querySelector('input').checked = true;
+    }
+    const btn = document.getElementById('btn-vote');
+    if (btn) btn.disabled = false;
+  }
+</script>
+</body>
+</html>
